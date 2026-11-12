@@ -1,0 +1,52 @@
+Goal Layers Source-Available License 1.1
+
+Copyright (c) 2026 Goal Layers contributors.
+
+1. Permission
+Subject to these terms, each copyright holder grants you a worldwide,
+nonexclusive, royalty-free copyright license to use, copy, modify, and
+redistribute their contributions to Goal Layers for personal, educational,
+noncommercial use, subject to the restrictions below. Internal hosting for an organization and any commercial use require a separate written agreement before that use begins.
+
+2. Internal hosting and commercial use require a separate agreement
+Without a separate written agreement from the relevant copyright holders,
+you may not host Goal Layers internally for an organization, use it for
+commercial purposes, sell, rent, sublicense for a fee, or otherwise charge for Goal
+Layers or a modified version; provide paid access to it as a hosted or
+managed service; or distribute it as part of a paid product or service.
+These restrictions also apply when access is bundled into another charge
+or the software is rebranded. Internal organizational hosting requires an agreement whether or not access is charged for.
+
+No commercial price, royalty, or revenue percentage is established by this
+license. Any permission for internal hosting or commercial use must be agreed in writing beforehand.
+A donation or code contribution does not itself grant that permission.
+Contact the Goal Layers repository maintainer to discuss an agreement.
+The maintainer may grant rights only for contributions they own or are
+authorized to license.
+
+3. Redistribution
+You may redistribute unmodified or modified copies without charging for
+them, provided you include this license and existing copyright notices,
+identify your modifications, and do not grant recipients rights to the
+covered software beyond those granted here. Recipients receive their
+permissions directly from the relevant copyright holders under this license.
+
+4. Contributions and third-party components
+Contributions intentionally submitted for inclusion in Goal Layers must
+be provided under these same terms, unless otherwise agreed in writing.
+Contributors retain ownership of their work. This license does not transfer
+copyright or automatically authorize the maintainer to commercially relicense
+someone else's contribution. Third-party components remain governed by
+their respective licenses; this license does not replace those terms.
+
+5. Other rights and termination
+No trademark rights are granted. Rights that cannot lawfully be restricted
+remain unaffected. Permissions under this license terminate if you violate
+its terms. Rights not expressly granted are reserved.
+
+6. Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDERS
+SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM
+THE SOFTWARE OR ITS USE.

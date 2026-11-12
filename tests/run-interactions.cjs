@@ -1,0 +1,5 @@
+const fs=require('node:fs'),path=require('node:path');
+const runner=process.env.GOAL_LAYERS_INTERACTION_RUNNER;
+if(!runner||!process.env.GOAL_LAYERS_TEST_THREAD||!process.env.GOAL_LAYERS_TEST_PROJECT)throw new Error('Set GOAL_LAYERS_INTERACTION_RUNNER, GOAL_LAYERS_TEST_THREAD and GOAL_LAYERS_TEST_PROJECT for a disposable demo');
+const run=require(runner),root=path.resolve(__dirname,'..');
+(async()=>{for(const name of ['desktop','mobile']){let raw=fs.readFileSync(path.join(__dirname,'interaction-'+name+'.json'),'utf8').replaceAll('[data-project=\"00000000-0000-4000-8000-000000000001\"]','[data-project=\"'+process.env.GOAL_LAYERS_TEST_PROJECT+'\"]');const spec=JSON.parse(raw);spec.sources=spec.sources.map(p=>path.join(root,p));for(const c of spec.cases)for(const e of c.events||[]){if(e.target?.startsWith('[data-project='))e.target='[data-project="'+process.env.GOAL_LAYERS_TEST_PROJECT+'"]';if(e.target?.startsWith('[data-thread='))e.target='[data-thread="'+process.env.GOAL_LAYERS_TEST_THREAD+'"]';}await run(spec,path.join(root,'work','interaction-'+name+'.json'));}console.log('Interaction reports passed')})().catch(e=>{console.error(e);process.exitCode=1});

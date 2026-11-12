@@ -1,0 +1,40 @@
+# Only reviewed project content is eligible by default.
+/*
+!/.gitignore
+!/Cargo.toml
+!/Cargo.lock
+!/README.md
+!/LICENSE
+/PUBLISHING.md
+!/reconstruction-schema.json
+!/src/
+!/web/
+!/tests/
+# Never publish local runtime state, credentials or test output.
+**/node_modules/
+**/target/
+**/data/
+**/work/
+**/.lean-gate/
+**/.env
+**/.env.*
+**/*.sqlite*
+**/*.db*
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.p12
+**/*.log
+**/*.webm
+**/test-results/
+**/playwright-report/
+
+
+# Reviewed README media only.
+!/docs/
+/docs/*
+!/docs/media/
+/docs/media/*
+!/docs/media/goal-layers-tree.gif
+!/docs/media/bitcoin.svg
+!/docs/media/solana.svg

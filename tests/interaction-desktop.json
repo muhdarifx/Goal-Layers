@@ -1,0 +1,130 @@
+{
+  "url": "http://127.0.0.1:4317",
+  "sources": [
+    "web/index.html",
+    "web/style.css",
+    "web/app.js",
+    "web/flow.js"
+  ],
+  "conditions": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "motion_claimed": false,
+  "cases": [
+    {
+      "component": "Details panel",
+      "modality": "pointer",
+      "events": [
+        {
+          "type": "click",
+          "target": "[data-project=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "[data-thread=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "#toggle-inspector"
+        },
+        {
+          "type": "pointer",
+          "target": "#close-inspector"
+        }
+      ],
+      "observe": {
+        "selector": "#inspector",
+        "kind": "hidden"
+      },
+      "assertion": "equals",
+      "expected": false
+    },
+    {
+      "component": "Details keyboard close",
+      "modality": "keyboard",
+      "events": [
+        {
+          "type": "click",
+          "target": "[data-project=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "[data-thread=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "#toggle-inspector"
+        },
+        {
+          "type": "key",
+          "target": "#close-inspector",
+          "key": "Escape"
+        }
+      ],
+      "observe": {
+        "selector": "#inspector",
+        "kind": "hidden"
+      },
+      "assertion": "equals",
+      "expected": true
+    },
+    {
+      "component": "Details touch close",
+      "modality": "touch",
+      "events": [
+        {
+          "type": "click",
+          "target": "[data-project=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "[data-thread=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "tap",
+          "target": "#toggle-inspector"
+        },
+        {
+          "type": "tap",
+          "target": "#close-inspector"
+        }
+      ],
+      "observe": {
+        "selector": "#inspector",
+        "kind": "hidden"
+      },
+      "assertion": "equals",
+      "expected": true
+    },
+    {
+      "component": "Reduced motion canvas",
+      "modality": "reduced_motion",
+      "events": [
+        {
+          "type": "click",
+          "target": "[data-project=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "click",
+          "target": "[data-thread=\"00000000-0000-4000-8000-000000000001\"]"
+        },
+        {
+          "type": "wait",
+          "target": "body",
+          "ms": 100
+        }
+      ],
+      "observe": {
+        "selector": "#flow-canvas",
+        "kind": "style",
+        "name": "animationName"
+      },
+      "assertion": "equals",
+      "expected": "none"
+    }
+  ]
+}

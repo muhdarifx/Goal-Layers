@@ -1,0 +1,18 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(require('path').join(__dirname,'../web/app.js'),'utf8');
+const line=source.split('\n').find(l=>l.startsWith('function displayTitle('));
+const context={};vm.createContext(context);vm.runInContext(line,context);
+const markdownContext={window:{markdownit:require('../web/vendor/markdown-it.min.js')}};vm.createContext(markdownContext);
+vm.runInContext(source.split('\n').filter(l=>l.startsWith('const markdown=')||l.startsWith('markdown.renderer.rules.image=')||l.startsWith('function readableText(')||l.startsWith('function markdownText(')).join('\n'),markdownContext);
+const rendered=markdownContext.markdownText('# Heading\n\n**Bold** and *soft* with `code`\n\n- First\n- Second\n\n[Docs](https://example.com)\n\n<script>alert(1)</script>\n\n[Unsafe](javascript:alert(1))\n\nSource 00000000-0000-4000-8000-000000000001:00000000-0000-4000-8000-000000000001: /goal hello');
+for(const expected of ['<h1>Heading</h1>','<strong>Bold</strong>','<em>soft</em>','<code>code</code>','<ul>','href="https://example.com"'])assert(rendered.includes(expected),expected);
+assert(!rendered.includes('<script>'));assert(!rendered.includes('href="javascript:'));assert(!rendered.includes('00000000-0000-4000-8000-000000000001'));assert(!rendered.includes('/goal'));assert(rendered.includes('hello'));
+for(const [input,expected] of [['/goal **Ship it**','Ship it'],['/go Ship it','Ship it'],['[@Cloudflare](plugin://app-id) : build','@Cloudflare : build'],['[$App](app://id) test','$App test'],['Goal title','Goal title'],[null,'']])assert.equal(context.displayTitle(input),expected);
+assert.equal(context.displayTitle('[@Plugin](plugin://'+ 'x'.repeat(200)+') title'),'@Plugin title');
+console.log('PASS: commands and plugin URLs removed before title truncation.');
+const names={data:{goals:{later:{objective:'/goal Ship the new feature'}}},displayTitle:context.displayTitle};vm.createContext(names);vm.runInContext(source.split('\n').find(l=>l.startsWith('const name='))+'\nglobalThis.titleFor=name;',names);
+assert.equal(names.titleFor({id:'later',name:'Earlier unrelated discussion',preview:'Old opening message'}),'Ship the new feature');
+assert.equal(names.titleFor({id:'ordinary',name:'Ordinary chat'}),'Ordinary chat');
+console.log('PASS: goals started mid-chat use the saved goal objective, ordinary chats keep their title.');const dates={data:{goals:{old:{createdAt:10,updatedAt:20},new:{createdAt:30},resumed:{createdAt:1,updatedAt:40}}}};vm.createContext(dates);vm.runInContext(source.split('\n').find(l=>l.startsWith('function goalTime(')),dates);
+assert.deepEqual(['old','new','resumed'].map(id=>({id,updatedAt:99999})).sort((a,b)=>dates.goalTime(b)-dates.goalTime(a)).map(t=>t.id),['resumed','new','old']);
+console.log('PASS: most recent goal activity sorts first; chat timestamps do not affect goal order.');
