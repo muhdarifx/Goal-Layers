@@ -9,6 +9,38 @@ use std::collections::BTreeMap;
 pub struct Cache {
     entries: BTreeMap<String, Entry>,
 }
+impl Cache {
+    pub fn review_revision(&self) -> String {
+        use std::hash::{Hash, Hasher};
+        let records: Vec<(&str, Value)> = self
+            .entries
+            .iter()
+            .filter_map(|(id, entry)| {
+                serde_json::from_str(entry.input.strip_prefix("scope-v2:")?)
+                    .ok()
+                    .map(|record| (id.as_str(), record))
+            })
+            .collect();
+        let review_turns: std::collections::BTreeSet<_> = records
+            .iter()
+            .filter(|(_, r)| r["review_request"] == true)
+            .filter_map(|(_, r)| r["turn_id"].as_str())
+            .collect();
+        let mut hash = std::collections::hash_map::DefaultHasher::new();
+        for (id, record) in &records {
+            if record["review_request"] == true
+                || record["turn_id"]
+                    .as_str()
+                    .is_some_and(|turn| review_turns.contains(turn))
+            {
+                continue;
+            }
+            id.hash(&mut hash);
+            record.to_string().hash(&mut hash);
+        }
+        format!("{:016x}", hash.finish())
+    }
+}
 #[derive(Serialize, Deserialize)]
 struct Entry {
     input: String,
@@ -47,6 +79,9 @@ fn fact(id: String, title: String, kind: &str, lane: &str, source: &str, quote: 
 
 /// Preserve explicit reports and changed paths; never guess dependencies or completion from command success.
 fn extract(record: &Value) -> Vec<Component> {
+    if record["review_request"] == true {
+        return Vec::new();
+    }
     let source = text(record, "source_id");
     let mut facts = Vec::new();
     if text(record, "type") == "agentMessage" {
@@ -222,9 +257,44 @@ pub fn build(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn review_revision_ignores_review_turns_but_tracks_new_evidence() {
+        let record = json!({"source_id":"t:work","type":"command","turn_id":"work","output_excerpt":"check passed"});
+        let (_, cache, _, _) = build(
+            "t",
+            &json!({"objective":"Build"}),
+            &[("history".into(), vec![record.clone()])],
+            Cache::default(),
+        );
+        let revision = cache.review_revision();
+        let (_, cache, _, _) = build(
+            "t",
+            &json!({"objective":"Build"}),
+            &[(
+                "history".into(),
+                vec![
+                    record.clone(),
+                    json!({"source_id":"t:request","type":"userMessage","turn_id":"review","review_request":true}),
+                    json!({"source_id":"t:reply","type":"agentMessage","turn_id":"review","text":"Review complete"}),
+                ],
+            )],
+            cache,
+        );
+        assert_eq!(revision, cache.review_revision());
+        let mut changed = record;
+        changed["output_excerpt"] = json!("check failed");
+        let (_, cache, _, _) = build(
+            "t",
+            &json!({"objective":"Build"}),
+            &[("history".into(), vec![changed])],
+            cache,
+        );
+        assert_ne!(revision, cache.review_revision());
+    }
     use serde_json::json;
     #[test]
     fn human_requests_are_not_drift_and_file_changes_stay_unclassified() {
+        assert!(extract(&json!({"review_request":true,"source_id":"t:review","type":"userMessage","content":[{"text":"Please review the existing goal and scope."}]})).is_empty());
         let human = extract(
             &json!({"source_id":"t:u2","type":"userMessage","content":[{"text":"Please add an export option to this project as well."}]}),
         );

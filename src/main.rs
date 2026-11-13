@@ -24,7 +24,10 @@ mod account;
 mod chat_actions;
 mod digest;
 mod flow;
+mod fork_review;
 mod history;
+mod live_status;
+mod scope_breakdown;
 mod status_updates;
 mod trace;
 
@@ -115,7 +118,7 @@ impl Codex {
             .await?;
         Ok(client)
     }
-    /// Only explicit queued messages may mutate Codex; never interrupt or steer a running turn.
+    /// Mutations are explicit; review cancellation interrupts only its owned fork.
     async fn call(&mut self, method: &str, params: Value) -> Result<Value, Error> {
         if !matches!(
             method,
@@ -129,6 +132,15 @@ impl Codex {
                 | "thread/read"
                 | "thread/queue/add"
                 | "thread/queue/list"
+                | "thread/resume"
+                | "thread/fork"
+                | "thread/goal/clear"
+                | "thread/delete"
+                | "turn/start"
+                | "turn/interrupt"
+                | "config/read"
+                | "configRequirements/read"
+                | "model/list"
         ) {
             return Err("Codex client refused method".into());
         }
@@ -502,7 +514,19 @@ async fn detail(
     let rows = result["data"]
         .as_array()
         .ok_or_else(|| api_error("No item history"))?;
-    let status_updates = status_updates::apply(&app, &id, rows).await?;
+    fork_review::resume_pending(&app, &id).await;
+    let mut review_rows = rows.clone();
+    review_rows.extend(fork_review::saved_rows(&app, &id).await);
+    let mut status_updates = status_updates::apply(&app, &id, &review_rows).await?;
+    status_updates.extend(scope_breakdown::apply(&app, &id, &review_rows).await?);
+    let reviews = fork_review::snapshots(&app, &id).await;
+    status_updates.retain(|status| {
+        !reviews
+            .iter()
+            .any(|review| review["request_id"] == status["request_id"])
+    });
+    status_updates.extend(reviews);
+    live_status::refresh(&app, &id).await?;
     let steps = reported_steps(rows, &id);
     app.reports.write().await.insert(id.clone(), steps.clone());
     let original_page = app
@@ -572,13 +596,31 @@ async fn scope_trace(
             json!({"available":false,"reason":"Session log unavailable"}),
         ));
     };
-    let graph = app
+    let mut graph = app
         .flow
         .documents
         .lock()
         .await
         .get(&id)
         .map(|d| d.graph.clone());
+    if let Some(graph) = &mut graph {
+        for n in app.nodes.lock().await.iter().filter(|n| n.thread_id == id) {
+            if let Some(source) = graph.nodes.iter_mut().find(|s| s.id == n.id) {
+                source.title = n.title.clone();
+            } else {
+                graph.nodes.push(flow::Component {
+                    id: n.id.clone(),
+                    title: n.title.clone(),
+                    kind: "Manual step".into(),
+                    lane: n.lane.clone(),
+                    status: n.status.clone(),
+                    description: n.evidence.clone(),
+                    next: n.next.clone(),
+                    evidence: vec![],
+                });
+            }
+        }
+    }
     let cache = app.trace.clone();
     let criteria = app
         .nodes
@@ -965,6 +1007,9 @@ async fn persist_node(
         .revision
         .checked_add(1)
         .ok_or((StatusCode::CONFLICT, "Revision exhausted".into()))?;
+    if !agent_report {
+        node.status_report_id = Some(format!("manual-{}", now()));
+    }
     let mut next = nodes.clone();
     // Snapshot imported ancestors so a saved substep remains valid after restart.
     let mut parent = node.parent_id.clone();
@@ -1196,6 +1241,7 @@ async fn main() -> Result<(), Error> {
         .route("/api/thread/{id}", get(detail))
         .route("/api/trace/{id}", get(scope_trace))
         .route("/api/thread/{id}/message", post(chat_actions::send))
+        .route("/api/thread/{id}/review/stop", post(fork_review::stop))
         .route("/api/nodes", post(edit_node))
         .route("/api/nodes/visibility", post(node_visibility))
         .route("/api/nodes/visibility/bulk", post(bulk_node_visibility))

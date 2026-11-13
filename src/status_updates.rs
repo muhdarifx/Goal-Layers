@@ -189,6 +189,25 @@ pub async fn apply(app: &Arc<App>, thread: &str, rows: &[Value]) -> Result<Vec<V
             }
         }
         drop(stored);
+        if matches!(text(&outcome, "status"), "applied" | "rejected")
+            && receipt["transport"] == "fork"
+        {
+            let graph = app
+                .flow
+                .documents
+                .lock()
+                .await
+                .get(thread)
+                .map(|d| d.graph.clone());
+            if let Some(graph) = graph {
+                outcome["reviewed_input"] = crate::chat_actions::review_input(
+                    text(&receipt, "goal"),
+                    &graph,
+                    &app.nodes.lock().await,
+                );
+                outcome["reviewed_history"] = receipt["input_history"].clone();
+            }
+        }
         receipts.insert(key, outcome.clone());
         chat_actions::save_receipts(app, &receipts).await?;
         outcomes.push(outcome);

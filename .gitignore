@@ -5,8 +5,6 @@
 !/Cargo.lock
 !/README.md
 !/LICENSE
-/PUBLISHING.md
-!/reconstruction-schema.json
 !/src/
 !/web/
 !/tests/
@@ -38,3 +36,14 @@
 !/docs/media/goal-layers-tree.gif
 !/docs/media/bitcoin.svg
 !/docs/media/solana.svg
+
+# Local publishing notes and generated files, including nested output.
+/docs/local/
+/goal-layers.exe
+**/*.tmp
+**/*.bak
+**/*.pdb
+**/*.dmp
+**/.DS_Store
+**/Thumbs.db
+**/coverage/

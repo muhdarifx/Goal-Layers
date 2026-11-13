@@ -130,7 +130,7 @@ impl Session {
             } else {
                 Vec::new()
             };
-            self.items.insert(id.into(),json!({"turn_id":p["turn_id"],"at":event["timestamp"],"sequence":self.sequence,"kind":event_kind,"command":exact_command,"reports":reports,"summary":summary.chars().take(1200).collect::<String>(),"exit_code":item.get("exit_code").or_else(||item.get("exitCode")),"origin":if human{"human"}else{"agent"},"preceding_request":self.human}));
+            self.items.insert(id.into(),json!({"id":id,"turn_id":p["turn_id"],"at":event["timestamp"],"sequence":self.sequence,"kind":event_kind,"command":exact_command,"reports":reports,"summary":summary.chars().take(1200).collect::<String>(),"exit_code":item.get("exit_code").or_else(||item.get("exitCode")),"origin":if human{"human"}else{"agent"},"preceding_request":self.human}));
         }
     }
 }
@@ -251,7 +251,7 @@ impl Cache {
                 .and_then(|reports| reports.iter().find(|r| r["title"] == node.title))
                 .and_then(|r| r["status"].as_str())
                 .unwrap_or(&node.status);
-            let progress = json!({"reported_status":reported_status,"verification":verification,"acceptance_criteria":criterion,"latest_check":check,"timeline":timeline.iter().rev().take(30).collect::<Vec<_>>(),"limitation":"Verification means the defined acceptance command passed in this recorded session. It does not certify untested behavior. Newer edits require reassessment."});
+            let progress = json!({"reported_status":reported_status,"verification":verification,"acceptance_criteria":criterion,"latest_check":check,"latest_edit":state.items.values().filter(|r|r["kind"]=="edit").max_by(|a,b|event_order(a,b)),"latest_report":latest_report.map(|r|json!({"id":r["id"],"at":r["at"],"status":reported_status})),"timeline":timeline.iter().rev().take(30).collect::<Vec<_>>(),"limitation":"Verification means the defined acceptance command passed in this recorded session. It does not certify untested behavior. Newer edits require reassessment."});
             let sum = |key: &str| {
                 usage
                     .iter()

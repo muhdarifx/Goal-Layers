@@ -31,13 +31,15 @@ Follow a goal through its required work, added work, and recorded step status. T
 
 ## ✨ Features
 
-- **Project and goal discovery.** Browse saved Codex goals, including goals created partway through a chat and archived goals available in local stores. Goals sort by their own latest activity.
-- **Interactive work tree.** Explore the original goal, work areas, and recorded steps with direct connections, without opening one group at a time.
-- **Evidence beside the work.** Inspect source quotations, reported progress, blockers, and the next recorded action in a tabbed details dialog.
-- **Scope review.** Keep identifiable human requests with required work. Review other additions without treating every new file or AI action as drift.
-- **Token traces.** See recorded source-turn usage where it can be linked to a step. Shared tokens are not presented as an exclusive per-node cost.
-- **Local editing and reversible hiding.** Edit existing steps or hide distracting nodes without deleting source files or chat history.
-- **Optional AI review.** Ask Codex to review a bounded outline and its selected evidence, with local validation before changes are saved.
+- **Goal progress as a tree.** See the original goal, required work, added work, and nested steps in context, with recorded status on each node.
+- **Local refresh.** Rebuild the outline from saved Codex history and update statuses from available evidence while preserving review details and local edits.
+- **In-depth AI review.** Review missing scope, existing node statuses, and the Added Work summary together in a temporary read-only fork. The original chat stays untouched.
+- **Review controls.** Follow incoming Markdown responses, open the review fork in Codex, stop a running review, or request a fresh review instead of reusing a saved result.
+- **Usage confirmation.** Before a new fork review, see the model and fastest available speed and confirm that it may consume Codex usage or incur API charges.
+- **Evidence and follow-ups.** Inspect progress, blockers, source quotations, and next steps; ask for a status update or continue a selected topic in its original chat.
+- **Canvas navigation.** Pan, pinch to zoom on a trackpad, arrange nodes, select groups, undo layout changes, and switch to fullscreen.
+- **Local editing and hiding.** Edit existing steps with Markdown previews, or hide and restore nodes without deleting their source history.
+- **Usage in one place.** View available Codex account usage and source-linked token traces. Shared tokens are not counted as exclusive per-node costs.
 
 <a id="getting-started"></a>
 
@@ -85,8 +87,8 @@ The default `data/` directory is created beside the executable, not necessarily 
 
 1. Select a project in the sidebar.
 2. The first available goal opens automatically; choose another goal to change the canvas.
-3. Refresh the local outline to extract updated history.
-4. Open a node to inspect its overview, evidence, and connections.
+3. Choose **Build flow** to extract the local outline. If an initial in-depth review is needed, the app asks for usage confirmation first.
+4. Open a node to inspect its overview, evidence, connections, and AI response. Use **Refresh** for new local records or **Deep review** for a combined AI review.
 
 Project matching uses explicit assignments and normalized project/worktree paths. A chat without a reliable project link stays unassigned rather than receiving a guessed assignment. The Projects and Goals sections can be collapsed and resized; these preferences are saved in the browser.
 
@@ -97,7 +99,7 @@ Project matching uses explicit assignments and normalized project/worktree paths
 | Hand | Default mode. Drag to pan; click a node to open details. |
 | Pointer | Move nodes or drag empty canvas space to select multiple nodes. |
 | Shift-click | Add or remove individual nodes from a selection. |
-| Zoom | Change the canvas scale. Mouse scrolling moves through the canvas. |
+| Zoom | Pinch in or out on a trackpad, or use the zoom buttons. Ordinary scrolling pans the canvas. |
 | Arrange | Reapply the layout while preserving the camera position. |
 | Undo / redo | Step through layout changes in the current session. |
 | Lock | Prevent canvas movement and node dragging. |
@@ -108,9 +110,9 @@ Manually moved positions are stored per goal in the browser. Moving or arranging
 
 ### Details, edits, and hidden nodes
 
-Details use **Overview**, **Evidence**, and **Connections** tabs where applicable. Previous/next controls navigate between nodes. Escape, the close icon, or a click outside dismisses the dialog.
+Details use **Overview**, **Evidence**, **Connections**, and **Response** tabs where applicable. Incoming AI text renders as Markdown in a scrollable area, with review controls kept visible. Previous/next controls navigate between nodes. Escape, the close icon, or a click outside dismisses the dialog.
 
-Existing steps can be edited locally. There is no manual Add Step workflow. Marking a local step complete requires evidence text; entering text does not independently verify its truth.
+Existing steps can be edited locally, with Raw / Rendered previews for Markdown fields. Dialogs stay within the viewport and scroll internally; text areas resize vertically only. There is no manual Add Step workflow. Marking a local step complete requires evidence text; entering text does not independently verify its truth.
 
 **Hide** asks for confirmation and removes selected nodes and their displayed connections from the view. Source records, history, and overall goal progress remain intact. Children are not automatically hidden. Use **Hidden nodes** to restore individual items. The original goal and display-only groups cannot be bulk-hidden.
 
@@ -142,15 +144,26 @@ Rust reads accessible history and extracts recorded facts without calling a mode
 
 The compact overview is bounded to 32 reported steps, 16 changed directories, and 12 later requests. Omitted items are disclosed. Scanning records does not mean every relationship in prose can be reconstructed.
 
-### Optional AI review
+### Refresh and Deep review
 
-AI review uses the configured Codex environment. It receives a bounded outline and selected quotations, not the entire history. Review input is limited to 64,000 bytes.
+| Action | What happens |
+| --- | --- |
+| **Build flow** | Creates the local outline. The first in-depth review requires usage confirmation before a fork is started. |
+| **Refresh** | Reads newer local records and updates statuses from matching evidence. If statuses remain unresolved, offers a status-only review in a read-only fork. |
+| **Deep review** | Sends one combined request to a temporary fork for missing scope details, evidence-based node statuses, and a cited Added Work summary. |
+| **Run fresh review** | Bypasses a saved result and requests a new review, with usage confirmation. Available after a completed, failed, or stopped review. |
 
-The model proposes corrections rather than rewriting the saved graph. Rust validates identifiers, quotations, and human attribution, then merges accepted changes while retaining existing nodes and connections. Invalid, failed, or cancelled results preserve the previous flow.
+Before a new fork review starts, the app shows an in-app confirmation with the model and fastest available speed for the account. A review consumes Codex allowance or credits; API-key use may incur charges. The exact cost is not known in advance. Cancelling the confirmation does not start the review.
 
-The app requests low reasoning effort and otherwise uses the configured model. Runtime depends on the model, history, and local I/O; there is no fixed completion-time guarantee. An operation is limited to 30 minutes and an individual model pass to 10 minutes, with at most one correction pass. These are app limits, separate from account usage limits.
+Deep review uses a temporary read-only, network-restricted fork. The original chat receives no review message. Inherited goal continuation is cleared, approvals are disabled, and connected app and MCP tools are disabled for the review.
 
-The Activity panel shows operation state, elapsed time, remaining time when applicable, and recorded processing counts. It does not expose private internal reasoning.
+Pending requests are reused to avoid duplicate sends. Completed results are reused while the saved goal, outline, evidence, and node state are unchanged. The Response tab identifies restored or reused results; choose **Run fresh review** when another pass is needed. Unobserved project-file changes do not automatically invalidate this cache.
+
+While a review runs, the Response tab shows its latest reported commentary and operation counts. **Open in Codex** opens the temporary review chat. **Stop** requests interruption of that fork, leaving it available for inspection; it does not stop the original chat. Failed or interrupted reviews also keep their fork. A fresh review can run without deleting that retained chat.
+
+Responses are saved locally, then validated before application. Accepted results can add nested scope nodes, update existing statuses, and populate the Added Work summary. Existing nodes are preserved. Quotations, identifiers, and reply structure are checked; invalid or stale replies cannot overwrite unrelated work. Reported completion is not independent verification. Input is limited to 64,000 bytes.
+
+After a successful review is saved, validated, and applied, its owned fork is deleted. Cleanup failures are recorded and can be retried without rerunning the review. The Codex link disappears when deletion is confirmed. No private internal reasoning is displayed.
 
 ### Ask for status or continue a topic
 
@@ -238,7 +251,8 @@ Read existing nodes before updating: the revision must match, and a successful w
 | `POST /api/nodes/visibility/bulk` | Change visibility for a validated selection. |
 | `POST /api/flow/{id}/reconstruct` | Start local extraction. |
 | `POST /api/flow/{id}/review` | Start AI review. |
-| `POST /api/flow/{id}/cancel` | Cancel the operation. |
+| `POST /api/flow/{id}/cancel` | Cancel local reconstruction. |
+| `POST /api/thread/{id}/review/stop` | Request interruption of the owned review fork. |
 | `POST /api/thread/{id}/message` | Queue a supported node-related chat action. |
 
 Mutation requests use JSON and the local client header `X-Goal-Atlas: 1`. This header is not public-server authentication. Validation and error responses are defined in the handlers; the API is not a versioned public service contract.
@@ -257,16 +271,19 @@ src/
   flow.rs            Flow persistence, reconstruction, and AI review
   trace.rs           Evidence and token tracing
   status_updates.rs  Structured status reply validation
-  chat_actions.rs    Queued Codex chat actions
+  chat_actions.rs    Chat actions, review consent, and duplicate protection
+  fork_review.rs     Read-only fork lifecycle, progress, stopping, and cleanup
+  scope_breakdown.rs Scope breakdown validation and application
+  live_status.rs     Status updates from local evidence
+  reconstruction-schema.json  Embedded structured-flow schema
   account.rs         Account usage and initial page rendering
 web/                 Embedded interface, icons, fonts, and Markdown renderer
 tests/               Browser and interaction checks
-reconstruction-schema.json
 Cargo.toml
 Cargo.lock
 ```
 
-`reconstruction-schema.json` defines the structured flow response and is embedded during compilation. Keep it in source control; it contains field definitions, not chat history.
+`src/reconstruction-schema.json` defines the structured flow response and is embedded during compilation. Keep it in source control; it contains field definitions, not chat history.
 
 ### Checks
 
@@ -275,11 +292,12 @@ cargo fmt --check
 cargo test --locked
 cargo build --release --locked
 node tests/titles.cjs
+node tests/scope-breakdown.cjs
 ```
 
 Rust tests cover extraction, graph validation, read-only access, status handling, and evidence rules. Environment-dependent tests are ignored by default and require a configured Codex environment or recorded fixture. Passing the default suite does not establish that those integrations passed.
 
-Browser tests require Node.js, Playwright, Chrome, and a running app. Several historical integration checks require a disposable demo chat through `GOAL_LAYERS_TEST_THREAD`. Do not run write-capable checks against important work. The optional interaction runner also uses `GOAL_LAYERS_TEST_PROJECT` and `GOAL_LAYERS_INTERACTION_RUNNER`.
+Browser tests require Node.js, Playwright, and Chrome. The synthetic scope-review test runs without a live Codex chat; other tests may require a running app. Several historical integration checks require a disposable demo chat through `GOAL_LAYERS_TEST_THREAD`. Do not run write-capable checks against important work. The optional interaction runner also uses `GOAL_LAYERS_TEST_PROJECT` and `GOAL_LAYERS_INTERACTION_RUNNER`.
 
 Keep backend rules and presentation consistent when changing behavior. Prefer focused regression checks and non-sensitive fixtures. Preserve vendor and font license notices.
 
@@ -292,7 +310,8 @@ Keep backend rules and presentation consistent when changing behavior. Prefer fo
 | Cannot connect to Codex | Confirm it is installed and signed in. Set `GOAL_ATLAS_CODEX` if the wrong executable is selected. |
 | Goal missing from a project | Check its saved goal and project/worktree association. A chat title is not necessarily a goal. |
 | Step unknown or unverified | Inspect evidence and acceptance criteria. Missing evidence does not prove failure. |
-| AI review fails or takes too long | Inspect Activity and source notes. Cancel if needed; the prior flow is retained. |
+| AI review fails or takes too long | Open the fork with **Open in Codex**. Use **Stop** for a running review or **Run fresh review** after it fails or stops. The original chat stays unchanged. |
+| Review shows saved data | The app reused a result. Use **Run fresh review** to request another pass; usage confirmation still applies. |
 | Usage unavailable | Retry usage refresh and check the Codex account connection. |
 | Port occupied | Close the conflicting process or reuse the recognized instance. The default port is fixed. |
 | Data cannot be saved | Check permissions or configure a writable `GOAL_ATLAS_DATA` file path. |
