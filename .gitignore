@@ -47,3 +47,6 @@
 **/.DS_Store
 **/Thumbs.db
 **/coverage/
+
+# Generated executables are local build artifacts.
+**/*.exe

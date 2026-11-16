@@ -20,6 +20,8 @@ struct Session {
     items: BTreeMap<String, Value>,
     human: Option<String>,
     sequence: u64,
+    lifecycle: BTreeMap<String, Value>,
+    active_turn: Option<String>,
 }
 fn event_order(a: &Value, b: &Value) -> std::cmp::Ordering {
     match (a["at"].as_str(), b["at"].as_str()) {
@@ -30,6 +32,42 @@ fn event_order(a: &Value, b: &Value) -> std::cmp::Ordering {
 impl Session {
     fn ingest(&mut self, event: &Value) {
         let p = &event["payload"];
+        // Detached app-server readers can call an executing turn interrupted.
+        // The owner's explicit lifecycle events distinguish that from a real stop.
+        if text(event, "type") == "event_msg" {
+            let status = match text(p, "type") {
+                "task_started" => Some("running"),
+                "task_complete" => Some("completed"),
+                "turn_aborted" => Some("interrupted"),
+                _ => None,
+            };
+            if let Some(status) = status {
+                let id = text(p, "turn_id");
+                if !id.is_empty() {
+                    let terminal = self
+                        .lifecycle
+                        .get(id)
+                        .is_some_and(|v| v["status"] != "running");
+                    if !terminal || status != "running" {
+                        self.lifecycle.insert(
+                            id.into(),
+                            json!({"status":status,"updated_at":event["timestamp"]}),
+                        );
+                        if status == "running" {
+                            self.active_turn = Some(id.to_owned());
+                        } else if self.active_turn.as_deref() == Some(id) {
+                            self.active_turn = None;
+                        }
+                    }
+                }
+            }
+        }
+        if let Some(id) = &self.active_turn {
+            let attributed = p["turn_id"].as_str();
+            if attributed.is_none_or(|turn| turn == id) {
+                self.lifecycle.get_mut(id).unwrap()["updated_at"] = event["timestamp"].clone();
+            }
+        }
         if text(event, "type") == "token_usage_record" {
             let turn = text(p, "turn_id");
             let response = text(p, "response_id");
@@ -267,7 +305,7 @@ impl Cache {
             .map(|v| v["tokens"].as_u64().unwrap_or(0))
             .fold(0u64, u64::saturating_add);
         Ok(
-            json!({"available":true,"recorded_tokens":total,"recorded_turns":state.turns.len(),"nodes":nodes}),
+            json!({"available":true,"recorded_tokens":total,"recorded_turns":state.turns.len(),"nodes":nodes,"turn_lifecycle":state.lifecycle}),
         )
     }
 }
@@ -275,6 +313,33 @@ impl Cache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn owner_lifecycle_survives_detached_observers_and_stays_turn_specific() {
+        let mut state = Session::default();
+        let event = |kind: &str, turn: &str, at: &str| json!({"type":"event_msg","timestamp":at,"payload":{"type":kind,"turn_id":turn}});
+        state.ingest(&event("task_started", "owned", "2026-11-14T08:24:22Z"));
+        assert_eq!(state.lifecycle["owned"]["status"], "running");
+        state.ingest(&event("agent_message", "other", "2026-11-14T08:24:30Z"));
+        state.ingest(&event("task_complete", "other", "2026-11-14T08:24:30Z"));
+        assert_eq!(state.active_turn.as_deref(), Some("owned"));
+        assert_eq!(
+            state.lifecycle["owned"]["updated_at"],
+            "2026-11-14T08:24:22Z"
+        );
+        state.ingest(&event("agent_message", "owned", "2026-11-14T08:24:31Z"));
+        assert_eq!(
+            state.lifecycle["owned"]["updated_at"],
+            "2026-11-14T08:24:31Z"
+        );
+        state.ingest(&event("task_complete", "owned", "2026-11-14T08:26:22Z"));
+        state.ingest(&event("task_started", "owned", "2026-11-14T08:24:22Z"));
+        assert_eq!(state.lifecycle["owned"]["status"], "completed");
+        assert!(state.active_turn.is_none());
+        state.ingest(&event("task_started", "cancelled", "2026-11-14T08:27:00Z"));
+        state.ingest(&event("turn_aborted", "cancelled", "2026-11-14T08:27:02Z"));
+        assert_eq!(state.lifecycle["cancelled"]["status"], "interrupted");
+        assert!(state.active_turn.is_none());
+    }
     #[test]
     fn completion_requires_exact_check_and_newer_edits_invalidate_it() {
         let dir = std::env::temp_dir().join(format!(

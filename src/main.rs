@@ -1,6 +1,6 @@
 use axum::{
     Json, Router,
-    extract::{DefaultBodyLimit, Path, State},
+    extract::{DefaultBodyLimit, Path, Query, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Sse, sse::Event},
     routing::{get, post},
@@ -22,6 +22,7 @@ use tokio::{
 use tokio_stream::{StreamExt, wrappers::BroadcastStream};
 mod account;
 mod chat_actions;
+mod conversation;
 mod digest;
 mod flow;
 mod fork_review;
@@ -95,9 +96,24 @@ impl Codex {
         }
     }
     async fn connect() -> Result<Self, Error> {
-        let executable = codex_executable();
-        let mut child = Command::new(executable)
-            .arg("app-server")
+        let mut command = Command::new(codex_executable());
+        command.args(["app-server", "--stdio"]);
+        Self::connect_command(command).await
+    }
+    /// Attach to the existing owner when the local Codex daemon exposes its control socket.
+    async fn connect_shared(home: &std::path::Path) -> Result<Self, Error> {
+        tokio::fs::symlink_metadata(home.join("app-server-control/app-server-control.sock"))
+            .await?;
+        let mut command = Command::new(codex_executable());
+        command
+            .args(["app-server", "proxy"])
+            .env("CODEX_HOME", home);
+        tokio::time::timeout(Duration::from_secs(2), Self::connect_command(command))
+            .await
+            .map_err(|_| "Codex shared connection timed out")?
+    }
+    async fn connect_command(mut command: Command) -> Result<Self, Error> {
+        let mut child = command
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::null())
@@ -128,10 +144,13 @@ impl Codex {
                 | "project/list"
                 | "thread/list"
                 | "thread/goal/get"
+                | "thread/goal/set"
                 | "thread/items/list"
+                | "thread/turns/list"
                 | "thread/read"
                 | "thread/queue/add"
                 | "thread/queue/list"
+                | "thread/queue/delete"
                 | "thread/resume"
                 | "thread/fork"
                 | "thread/goal/clear"
@@ -151,11 +170,14 @@ impl Codex {
         tokio::time::timeout(Duration::from_secs(45), async {
             while let Some(line) = self.output.next_line().await? {
                 let value: Value = serde_json::from_str(&line)?;
-                if value["id"].as_u64() == Some(id) {
+                if value.get("method").is_some() && conversation::capture(self._child.id(), &value) { continue; }
+                if value.get("method").is_none() && value["id"].as_u64() == Some(id) {
                     if !value["error"].is_null() { return Err(format!("Codex {method}: {}", value["error"]).into()); }
                     return Ok(value["result"].clone());
                 }
-                // Our connection cannot approve execution or grant permissions.
+                // Supported requests wait for an explicit user response in the local UI.
+                if conversation::capture(self._child.id(), &value) { continue; }
+                // Unsupported requests remain rejected.
                 if value.get("id").is_some() && value.get("method").is_some() {
                     let rejection = format!("{}\n", json!({"id":value["id"],"error":{"code":-32601,"message":"Read-only observer"}}));
                     self.input.write_all(rejection.as_bytes()).await?;
@@ -516,6 +538,7 @@ async fn detail(
         .ok_or_else(|| api_error("No item history"))?;
     fork_review::resume_pending(&app, &id).await;
     let mut review_rows = rows.clone();
+    review_rows.extend(chat_actions::poll_continuations(&app, &id).await?);
     review_rows.extend(fork_review::saved_rows(&app, &id).await);
     let mut status_updates = status_updates::apply(&app, &id, &review_rows).await?;
     status_updates.extend(scope_breakdown::apply(&app, &id, &review_rows).await?);
@@ -564,8 +587,9 @@ async fn detail(
         let title = match kind { "agentMessage" => text(item,"text").chars().take(4000).collect::<String>(), "commandExecution" => "Command execution".into(), "fileChange" => "File change".into(), "mcpToolCall" => format!("{} / {}",text(item,"server"),text(item,"tool")), "webSearch" => "Web research".into(), _ => kind.to_owned() };
         Some(json!({"id":item["id"],"kind":kind,"title":title,"status":item.get("status").cloned().unwrap_or(json!("recorded"))}))
     }).collect();
+    let continuations = chat_actions::continuation_snapshots(&app, &id).await;
     Ok(Json(
-        json!({"items":items,"statusUpdates":status_updates,"updatedNodes":app.nodes.lock().await.iter().filter(|n|n.thread_id==id).cloned().collect::<Vec<_>>(),"steps":steps,"original":original,"historyError":result["historyError"],"more":!result["nextCursor"].is_null()}),
+        json!({"items":items,"continuations":continuations,"statusUpdates":status_updates,"updatedNodes":app.nodes.lock().await.iter().filter(|n|n.thread_id==id).cloned().collect::<Vec<_>>(),"steps":steps,"original":original,"historyError":result["historyError"],"more":!result["nextCursor"].is_null()}),
     ))
 }
 async fn scope_trace(
@@ -1241,6 +1265,18 @@ async fn main() -> Result<(), Error> {
         .route("/api/thread/{id}", get(detail))
         .route("/api/trace/{id}", get(scope_trace))
         .route("/api/thread/{id}/message", post(chat_actions::send))
+        .route("/api/thread/{id}/reply", post(chat_actions::reply))
+        .route("/api/thread/{id}/conversation", get(conversation::read))
+        .route(
+            "/api/thread/{id}/conversation/settings",
+            get(conversation::settings),
+        )
+        .route(
+            "/api/thread/{id}/conversation/respond",
+            post(conversation::respond),
+        )
+        .route("/api/thread/{id}/goal", post(chat_actions::control_goal))
+        .route("/api/thread/{id}/queue", post(chat_actions::manage_queue))
         .route("/api/thread/{id}/review/stop", post(fork_review::stop))
         .route("/api/nodes", post(edit_node))
         .route("/api/nodes/visibility", post(node_visibility))

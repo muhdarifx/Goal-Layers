@@ -41,6 +41,24 @@ Follow a goal through its required work, added work, and recorded step status. T
 - **Local editing and hiding.** Edit existing steps with Markdown previews, or hide and restore nodes without deleting their source history.
 - **Usage in one place.** View available Codex account usage and source-linked token traces. Shared tokens are not counted as exclusive per-node costs.
 
+## Latest local additions
+
+These features are present in this development checkout; they are not a claim that a GitHub release has been published.
+
+- **Chat inside Goal Layers.** Read user and assistant messages and reply to the original conversation without leaving the goal view.
+- **Resizable conversation panel.** Adjust its width from the left edge; the width survives refresh. Close with the icon, Escape, or the backdrop.
+- **Readable conversation history.** Expand long user messages, load earlier history, and jump back to the latest message.
+- **Grouped agent activity.** Expand each run's recorded progress, commands, and available results while keeping its final response separate. Private reasoning is not displayed.
+- **Safer reply retries.** Failed sends preserve the draft and reuse the request identity on retry to reduce duplicate submissions.
+- **Work queue.** Inspect pending and recent requests, delivery state, and available operation progress. Cancel confirmed queued requests or dismiss uncertain local records.
+- **Goal controls.** Request pause or resume where the connection supports it; open Codex when ownership prevents the action.
+- **Current model information.** Read the model, effort, and speed when exposed by Codex. Change these settings in Codex through the provided link.
+- **Local session reuse.** Use the existing Codex session without a separate Goal Layers sign-in.
+- **Questions and permissions.** Respond to supported requests received by Goal Layers' own connection. Requests owned by another Codex connection are not automatically forwarded.
+- **Source notes and continuation tracking.** Inspect source-linked details and distinguish queued, running, completed, interrupted, and unconfirmed work.
+
+Messages are queued in the original chat; queue acceptance does not guarantee immediate execution. Model information can be unavailable, and Goal Layers cannot seize another connection's writer. Parallel coding agents, shared goal memory, vector context, and file-ownership coordination are a future plan, not implemented features.
+
 <a id="getting-started"></a>
 
 ## 🚀 Getting started

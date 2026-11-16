@@ -63,7 +63,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  outcome.fork_id='javascript:alert(1)';await page.evaluate(()=>loadActivity());assert.equal(await reviewLink.count(),0);
  outcome.fork_id='11111111-2222-4333-8444-555555555555';await page.evaluate(()=>loadActivity());await reviewLink.waitFor();
  // Deletion can arrive without a new message; remove the stale link on that update.
- outcome.progress.completed=4;await page.waitForFunction(()=>document.querySelector('.review-progress')?.textContent.includes('4 operations finished'));assert.match(await page.locator('.review-progress').innerText(),/4 operations finished/);
+ // Closing the dialog must leave progress visible and continue the existing polling.
+ const progressSends=requests.length;await page.locator('#close-inspector').click();assert.equal(await page.locator('#inspector').evaluate(e=>e.open),false);
+ const toolbarReview=page.locator('#review-run-status');assert(await toolbarReview.isVisible());assert.match(await toolbarReview.innerText(),/Reviewing.*3 done.*1 active/);
+ outcome.progress.completed=4;await page.waitForFunction(()=>document.querySelector('#review-run-status').textContent.includes('4 done'));assert.equal(requests.length,progressSends);
+ for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});const box=await toolbarReview.boundingBox();assert(box.x>=0&&box.x+box.width<=width);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+ await page.screenshot({path:require('os').tmpdir()+'/goal-review-toolbar-desktop.png'});
+ await page.evaluate(()=>{chatRequests.set(chatRequestKey(),{action:'continue',queued:true,pending:false,requestId:'different-continuation'})});await page.evaluate(()=>loadActivity(true));assert.match(await toolbarReview.innerText(),/Reviewing.*4 done/);
+ await toolbarReview.focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#inspector').evaluate(e=>e.open),true);assert.equal(await page.locator('#detail-tab-response').getAttribute('aria-selected'),'true');assert.equal(requests.length,progressSends);assert.match(await page.locator('.review-progress').innerText(),/4 operations finished/);await page.keyboard.press('Escape');assert.equal(await toolbarReview.evaluate(e=>e===document.activeElement),true);await toolbarReview.click();
  outcome.fork_deleted=true;await page.evaluate(()=>loadActivity());assert.equal(await reviewLink.count(),0);
  outcome.fork_deleted=false;await page.evaluate(()=>loadActivity());await reviewLink.waitFor();
 
@@ -71,12 +78,15 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  assert.equal(await page.locator('.chat-delivery.error').count(),0);
  graph.nodes.push({...graph.nodes[0],id:'detail',kind:'Scope detail',title:'Nested component',status:'blocked',next:'Resolve the missing input'});
  graph.edges.push({source:'r1',target:'detail',label:'includes',feedback:false});
- outcome={action:'breakdown',transport:'fork',fork_id:'11111111-2222-4333-8444-555555555555',fork_deleted:true,request_id:requests[0].body.request_id,status:'applied',message:'Deep review complete',requested_at:1,added_work_summary:{text:'Export support was added; authorization is uncertain.',evidence:[{source_id:'history:1',quote:'Export support'}]}};
+ outcome={action:'breakdown',transport:'fork',fork_id:'11111111-2222-4333-8444-555555555555',fork_deleted:true,request_id:requests[0].body.request_id,status:'applied',progress:{status:'completed',completed:4,running:0},message:'Deep review complete: scope, statuses and Added Work summary updated.',requested_at:1,added_work_summary:{text:'Export support was added; authorization is uncertain.',evidence:[{source_id:'history:1',quote:'Export support'}]}};
  await page.evaluate(()=>loadActivity());
  await page.locator('#flow-edges [data-source="r1"][data-target="detail"]').waitFor({state:'attached'});assert.equal(await reviewLink.count(),0);
  assert.equal(await page.locator('[data-node="detail"]').count(),1);
  assert.match(await page.locator('.flow-node[data-node="detail"]').innerText(),/blocked/i);
  const completedFresh=page.getByRole('button',{name:'Run fresh review',exact:true});await completedFresh.waitFor();
+ assert.match(await page.locator('.review-result-heading').innerText(),/Complete/);assert.match(await page.locator('.review-result-info').innerText(),/Operations\s+4 finished\s+Review chat\s+Deleted/);assert.equal(await page.locator('.review-progress').count(),0);
+ for(const width of [390,1280]){await page.setViewportSize({width,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('#inspector').screenshot({path:require('os').tmpdir()+'/goal-review-complete-'+width+'.png'});}
+ assert.equal(await page.locator('.response-scroll .markdown p').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)),13,'Response paragraphs retain the previous compact desktop type scale');
  const beforeRestore=requests.length;await page.evaluate(()=>{chatRequests.clear();return loadActivity()});
  await page.getByRole('heading',{name:'Using saved review',exact:true}).waitFor();await completedFresh.waitFor();
  assert.match(await page.locator('.chat-delivery').innerText(),/Cached results\. No new AI request was sent/);assert.equal(requests.length,beforeRestore);
@@ -93,7 +103,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  outcome={...outcome,request_id:requests.at(-1).body.request_id};await page.evaluate(()=>loadActivity());
  await page.keyboard.press('Escape');await page.locator('#deep-review-flow').click();await fresh.waitFor();
  failFresh=true;await fresh.click();await page.getByRole('heading',{name:'Unable to send',exact:true}).waitFor();assert.equal(await page.locator('.response-spinner').count(),0);
- assert(await page.locator('.chat-delivery').textContent().then(t=>t.includes('Review service unavailable')));await fresh.waitFor();
+ assert(await page.locator('.chat-delivery').textContent().then(t=>t.includes('Review service unavailable')));await fresh.waitFor();await page.locator('#close-inspector').click();assert.match(await toolbarReview.innerText(),/Review failed/);assert.equal(await toolbarReview.getAttribute('data-state'),'failed');const failedSends=requests.length;await toolbarReview.click();assert.equal(requests.length,failedSends);
  graph.nodes.push({...graph.nodes[0],id:'added',kind:'Changed files',lane:'addition',title:'Export support'});await page.evaluate(()=>GoalFlow.refresh());await page.keyboard.press('Escape');await page.setViewportSize({width:1280,height:844});await page.locator('#flow-minimap').click();await page.locator('[data-node="view-scope-addition"]').click();await page.getByRole('tab',{name:'Overview',exact:true}).click();await page.getByText('Export support was added; authorization is uncertain.',{exact:true}).waitFor();
 
 
@@ -112,6 +122,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  const prompt=page.evaluate(({speed,service_tier})=>confirmReview({options:{speed,service_tier,model:'test'}}),{speed,service_tier});await confirmation.waitFor({state:'visible'});assert.equal(await page.locator('#review-confirm-speed svg').count(),count);assert.equal(await page.locator('#review-confirm-speed svg').first().getAttribute('fill'),fill);assert.equal(await page.locator('#review-confirm-speed').innerText(),speed);if(service_tier==='ultrafast'){assert.equal(await page.locator('#review-confirm-speed path').getAttribute('d'),"M12.496 1.55042C13.3266 0.810781 14.6664 1.57948 14.3945 2.70277L13.3867 6.86097H18.0634C19.0535 6.86124 19.5922 8.01841 18.955 8.77601L11.248 17.9284C11.0114 18.2091 10.5914 18.2449 10.3105 18.0084C10.0297 17.7718 9.99389 17.3518 10.2304 17.0709L17.7089 8.19105H15.206C15.199 8.46403 15.1069 8.74127 14.9043 8.98206L7.24312 18.0797C6.45061 19.0208 4.92981 18.25 5.21968 17.0543L6.1689 13.1383H1.7607C0.663874 13.1383 0.0668853 11.8562 0.773392 11.0172L8.43453 1.91956C9.22701 0.978906 10.7474 1.74955 10.458 2.94495L9.50874 6.86097H12.0175L12.956 2.98987L12.7773 3.17933C12.5246 3.44588 12.1034 3.45737 11.8369 3.20472C11.5706 2.95204 11.5599 2.53172 11.8125 2.26527L12.4169 1.62659L12.496 1.55042Z");assert.equal(await page.locator('#review-confirm-speed pattern').count(),0);}await page.locator('#cancel-review-confirmation').click();assert.equal(await prompt,false);
  }
  assert.deepEqual(errors,[]);
- console.log('PASS: custom consent dialog, first-build and refresh consent, cancellation, keyboard and mobile; review chat link, keyboard navigation, unsafe ID rejection, deleted fork removal, cached-result fresh button, keyboard activation, new request ID, pending deduplication, error feedback, nested tree, desktop/mobile.');
+ console.log('PASS: custom consent dialog, first-build and refresh consent, cancellation, keyboard and mobile; review chat link, keyboard navigation, unsafe ID rejection, deleted fork removal, cached-result fresh button, keyboard activation, new request ID, pending deduplication, error feedback, persistent closed-dialog progress and completion, result reopening without requests, nested tree, desktop/mobile.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

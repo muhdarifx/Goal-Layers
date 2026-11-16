@@ -120,6 +120,20 @@ pub async fn apply(app: &Arc<App>, thread: &str, rows: &[Value]) -> Result<Vec<V
         if receipt["action"] != "status" {
             continue;
         }
+        if let Some(parent) = receipts.values().find(|r| {
+            r["action"] == "continue"
+                && r["thread_id"] == thread
+                && r["status_request_id"] == report.request_id
+        }) {
+            if !matches!(
+                text(parent, "status"),
+                "completed" | "failed" | "interrupted"
+            ) || row["turnId"] != parent["turn_id"]
+                || !parent["turn_id"].is_string()
+            {
+                continue;
+            }
+        }
         if matches!(
             text(&receipt, "status"),
             "applied" | "rejected" | "superseded"
