@@ -41,9 +41,9 @@ Follow a goal through its required work, added work, and recorded step status. T
 - **Local editing and hiding.** Edit existing steps with Markdown previews, or hide and restore nodes without deleting their source history.
 - **Usage in one place.** View available Codex account usage and source-linked token traces. Shared tokens are not counted as exclusive per-node costs.
 
-## Latest local additions
+## Latest additions
 
-These features are present in this development checkout; they are not a claim that a GitHub release has been published.
+These features are available in the current source. Downloadable releases may lag behind the source version.
 
 - **Chat inside Goal Layers.** Read user and assistant messages and reply to the original conversation without leaving the goal view.
 - **Resizable conversation panel.** Adjust its width from the left edge; the width survives refresh. Close with the icon, Escape, or the backdrop.
