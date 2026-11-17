@@ -16,8 +16,7 @@ For the avoidance of doubt, the requirements in sections 3 and 5 concerning earl
 It does not replace licenses on third-party components or retroactively
 change the terms of earlier third-party contributions.
 
-"Maintainer" means the operator of the muhdarifx GitHub account responsible
-for the Goal-Layers repository.
+"Maintainer" means Muhammad Arif, the operator of the muhdarifx GitHub account responsible for the Goal-Layers repository.
 
 "Personal use" means use for an individual's own projects or independent
 learning, not work performed for an organization, client, or paid service.
@@ -80,8 +79,8 @@ organizational use and remove operational copies unless a written
 commercial agreement is in force. Inactive backups and the entity's own
 data may be retained, but do not grant continued use of the software.
 
-This evaluation covers only code authorized under this version. Earlier
-contributions not relicensed by their owners remain subject to their
+This evaluation covers only code authorized under this version. Third-party contributions accepted earlier
+not relicensed by their owners remain subject to their
 existing terms. The maintainer must obtain those permissions or exclude
 that code before offering it under this evaluation.
 
@@ -130,7 +129,7 @@ commercial or other license terms. This does not transfer ownership or
 require the contributor to give up other uses of their work.
 
 The maintainer must obtain this acknowledgment before merging a new
-contribution under these terms. Earlier contributions require their owners'
+contribution under these terms. Third-party contributions accepted earlier require their owners'
 separate permission before being offered under version 1.2 or commercially
 relicensed. This document does not assert that those permissions have
 already been obtained. Third-party components retain their own terms.
