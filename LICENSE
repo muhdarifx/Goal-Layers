@@ -8,6 +8,11 @@ Copyright (c) 2026 Goal Layers contributors.
 This license applies only to contributions whose copyright holders have
 offered them under this version or authorized the maintainer to do so.
 Each grant is limited to rights that the granting party owns or controls.
+
+The maintainer is the sole copyright holder of all first-party code in this repository. Every first-party contribution in this repository, regardless of which license version applied when it was committed, is offered under version 1.2 as of 17 November 2026. Bundled third-party components, including Markdown-it, the LobeHub assets and the bundled fonts, are not covered by this statement and remain under their own licenses, as recorded in web/vendor and web/fonts.
+
+For the avoidance of doubt, the requirements in sections 3 and 5 concerning earlier contributions do not apply to first-party code authored by the maintainer, which is offered under this version as stated above.
+
 It does not replace licenses on third-party components or retroactively
 change the terms of earlier contributions.
 
