@@ -1,7 +1,7 @@
 Goal Layers Source-Available License 1.2
 Effective for code offered under this version from 17 November 2026.
 
-Copyright (c) 2026 Goal Layers contributors.
+Copyright (c) 2026 Muhammad Arif.
 
 1. Scope and definitions
 
@@ -14,7 +14,7 @@ The maintainer is the sole copyright holder of all first-party code in this repo
 For the avoidance of doubt, the requirements in sections 3 and 5 concerning earlier contributions do not apply to first-party code authored by the maintainer, which is offered under this version as stated above.
 
 It does not replace licenses on third-party components or retroactively
-change the terms of earlier contributions.
+change the terms of earlier third-party contributions.
 
 "Maintainer" means the operator of the muhdarifx GitHub account responsible
 for the Goal-Layers repository.

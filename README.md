@@ -160,7 +160,7 @@ Goal Layers is **source-available**, not distributed under an unrestricted open-
 | Use | Terms |
 | --- | --- |
 | Personal projects or independent learning | Free when the activity is not performed for an organization, client, or paid service. |
-| Internal organizational evaluation | One 30-day evaluation per named legal entity, starting with its first organizational use, for supported evaluation purposes under LICENSE. No separate agreement is needed for covered code. |
+| Internal organizational evaluation | One 30-day evaluation per named legal entity, starting with its first organizational use, to test compatibility, usability and suitability with its own workflows. No separate agreement is needed for covered code. |
 | Ongoing organizational use | A separate written commercial agreement is required after evaluation, even if internal access is free. |
 | Resale, paid access, or redistribution in a paid product | Requires an express commercial grant; an internal-use agreement alone does not allow it. |
 
@@ -180,9 +180,9 @@ Codex compatibility is version-sensitive. The software is provided as is, withou
 
 Contributors keep their copyright. Before a new contribution is merged under the contributor terms in LICENSE, its author must expressly acknowledge those terms in writing, including permission for the maintainer to offer commercial licenses. Do not submit third-party code without the necessary rights and notices.
 
-These terms do not retroactively grant rights over earlier contributions. Before offering a commercial build or evaluation of code covered by older terms, the maintainer must obtain the missing permission or exclude that code. Publication of this README or LICENSE is not evidence that this ownership review has been completed.
+All first-party code in this repository is offered under version 1.2 regardless of which version applied when it was committed, as stated in LICENSE. That review is complete for first-party code as of 17 November 2026. Any third-party contribution accepted later requires its owner's permission before being offered under that version or commercially relicensed.
 
-Bundled dependencies retain their own licenses. Markdown-it notices are in `web/vendor/`; DM Sans and Space Grotesk notices are in `web/fonts/`.
+Bundled dependencies retain their own licenses. Markdown-it and LobeHub asset notices are in `web/vendor/`; DM Sans and Space Grotesk notices are in `web/fonts/`.
 
 ## Development
 
