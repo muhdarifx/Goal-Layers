@@ -344,7 +344,7 @@ Historical records can be incomplete or unavailable. A bounded outline is not an
 
 Goal Layers is **source-available**, under the [Goal Layers Source-Available License](LICENSE). Personal, educational, and noncommercial use, modifications, and free redistribution are permitted subject to the license. **Internal organizational hosting and any commercial use require a separate written agreement** with the relevant rights holders before use begins, even when internal access is free. Contact the repository maintainer to discuss permission. No fee, royalty, or revenue percentage is preset; terms are agreed individually. Donations and contributions do not automatically grant commercial rights.
 
-Contributors retain their copyright and submit contributions under the same license unless otherwise agreed. Commercial licensing of contributed code may require additional permission from its authors. This custom license has not received independent legal review.
+Contributors retain their copyright and submit contributions under the same license unless otherwise agreed. Commercial licensing of contributed code may require additional permission from its authors.
 
 Bundled dependencies retain their own notices: Markdown-it includes its license in `web/vendor/`; DM Sans and Space Grotesk include SIL Open Font License notices in `web/fonts/`.
 ## Support the project
