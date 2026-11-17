@@ -1,50 +1,169 @@
-Goal Layers Source-Available License 1.1
+Goal Layers Source-Available License 1.2
+Effective for code offered under this version from 17 November 2026.
 
 Copyright (c) 2026 Goal Layers contributors.
 
-1. Permission
-Subject to these terms, each copyright holder grants you a worldwide,
-nonexclusive, royalty-free copyright license to use, copy, modify, and
-redistribute their contributions to Goal Layers for personal, educational,
-noncommercial use, subject to the restrictions below. Internal hosting for an organization and any commercial use require a separate written agreement before that use begins.
+1. Scope and definitions
 
-2. Internal hosting and commercial use require a separate agreement
-Without a separate written agreement from the relevant copyright holders,
-you may not host Goal Layers internally for an organization, use it for
-commercial purposes, sell, rent, sublicense for a fee, or otherwise charge for Goal
-Layers or a modified version; provide paid access to it as a hosted or
-managed service; or distribute it as part of a paid product or service.
-These restrictions also apply when access is bundled into another charge
-or the software is rebranded. Internal organizational hosting requires an agreement whether or not access is charged for.
+This license applies only to contributions whose copyright holders have
+offered them under this version or authorized the maintainer to do so.
+Each grant is limited to rights that the granting party owns or controls.
+It does not replace licenses on third-party components or retroactively
+change the terms of earlier contributions.
 
-No commercial price, royalty, or revenue percentage is established by this
-license. Any permission for internal hosting or commercial use must be agreed in writing beforehand.
-A donation or code contribution does not itself grant that permission.
-Contact the Goal Layers repository maintainer to discuss an agreement.
-The maintainer may grant rights only for contributions they own or are
-authorized to license.
+"Maintainer" means the operator of the muhdarifx GitHub account responsible
+for the Goal-Layers repository.
 
-3. Redistribution
-You may redistribute unmodified or modified copies without charging for
-them, provided you include this license and existing copyright notices,
-identify your modifications, and do not grant recipients rights to the
-covered software beyond those granted here. Recipients receive their
-permissions directly from the relevant copyright holders under this license.
+"Personal use" means use for an individual's own projects or independent
+learning, not work performed for an organization, client, or paid service.
+The ownership of the computer and the time of use do not determine purpose.
 
-4. Contributions and third-party components
-Contributions intentionally submitted for inclusion in Goal Layers must
-be provided under these same terms, unless otherwise agreed in writing.
-Contributors retain ownership of their work. This license does not transfer
-copyright or automatically authorize the maintainer to commercially relicense
-someone else's contribution. Third-party components remain governed by
-their respective licenses; this license does not replace those terms.
+"Organization" means a company, partnership, public body, nonprofit,
+educational institution, or other legal entity. "Organizational use" means
+use for that entity's work, including employee or contractor work,
+internships, internal hackathons, and institution-operated teaching.
+Independent student learning that is not work for an institution or client
+is personal use.
 
-5. Other rights and termination
+"Internal use" means use within one identified legal entity by its staff
+or contractors solely for that entity's work. Affiliates, clients, and
+customers are not included unless a written agreement names them.
+
+"Seat" means one distinct developer authorized to use Codex with Goal
+Layers for the licensed entity. Count each such developer once across
+devices and accounts. Shared accounts do not reduce the count. Count only
+developers authorized to use Codex with Goal Layers, not every Codex user
+in the organization.
+
+"Commercial use" includes organizational use beyond the evaluation grant,
+paid access, sale, rental, redistribution as part of a paid product or
+service, and providing Goal Layers as a service to third parties. Charging
+no separate fee, bundling access into another charge, or rebranding does
+not remove these restrictions.
+
+2. Personal use and free redistribution
+
+Subject to this license, each participating copyright holder grants a
+worldwide, nonexclusive, royalty-free copyright license to use, copy, and
+modify their covered contributions for personal use.
+
+You may redistribute covered source or binaries without charging for them
+if you include this license and existing copyright notices, identify your
+modifications, and give recipients no greater rights than this license
+provides. Recipients receive their permissions directly from participating
+copyright holders. This free redistribution grant does not allow paid
+bundles, paid access, or commercial services.
+
+3. Thirty-day internal evaluation
+
+An organization may use, copy, and modify covered contributions internally
+for one consecutive 30-day evaluation, without payment or a separate
+written agreement. The evaluation begins on that entity's first
+organizational use of code covered by this version. The entity must record
+its legal name and start date internally; registration with the maintainer
+is not required.
+
+The evaluation permits staff and contractors to test compatibility,
+usability, and suitability with the entity's own workflows and data,
+including a limited internal pilot. It does not permit ongoing operational
+deployment, paid services to clients, external hosted access, resale, or
+sublicensing. There is no seat cap during evaluation.
+
+One legal entity receives one evaluation period; another installation,
+user, version, or reinstall does not restart it. At its end, stop
+organizational use and remove operational copies unless a written
+commercial agreement is in force. Inactive backups and the entity's own
+data may be retained, but do not grant continued use of the software.
+
+This evaluation covers only code authorized under this version. Earlier
+contributions not relicensed by their owners remain subject to their
+existing terms. The maintainer must obtain those permissions or exclude
+that code before offering it under this evaluation.
+
+4. Commercial and ongoing organizational use
+
+A separate written agreement from the relevant rights holders or their
+authorized representative is required for commercial use beyond section
+3. An internal-use agreement must identify the licensed legal entity,
+authorized seat count, permitted use, price, billing period, and start/end
+dates. No commercial price, royalty, revenue percentage, billing period,
+automatic renewal, or obligation to buy is established by this license.
+
+Unless the agreement expressly states otherwise, it permits only the
+named entity's internal use. It grants no right to redistribute, sublicense,
+resell, provide third-party hosted access, or include the software in a paid
+product or service. Those activities need an express separate grant.
+
+Unless the agreement expressly provides otherwise, either party may end
+an ongoing internal-use agreement on 30 days' written notice to the other
+party's designated contact. Agreed payment obligations and any refund
+terms remain governed by that agreement. When permission ends, stop the
+covered use and remove operational copies; inactive backups and the
+customer's own data may be retained without continued software use.
+
+Contact the repository maintainer through:
+https://github.com/muhdarifx/Goal-Layers
+
+A donation, tip, or code contribution does not purchase commercial rights.
+The maintainer may grant rights only for code they own or are authorized
+to license.
+
+5. Contributions and permission to offer commercial licenses
+
+Contributors retain ownership of their work. New contributions are accepted
+under this version only after the contributor expressly acknowledges this
+section in writing in the pull request or a separate agreement. Submission
+alone is not the acknowledgment.
+
+By that acknowledgment, the contributor confirms that they have authority
+to grant these rights and identifies third-party material and its license.
+They offer their contribution under this public license and also grant
+the maintainer a worldwide, nonexclusive, perpetual, irrevocable,
+royalty-free copyright license to use, reproduce, modify, prepare
+derivative works, distribute, and sublicense that contribution under
+commercial or other license terms. This does not transfer ownership or
+require the contributor to give up other uses of their work.
+
+The maintainer must obtain this acknowledgment before merging a new
+contribution under these terms. Earlier contributions require their owners'
+separate permission before being offered under version 1.2 or commercially
+relicensed. This document does not assert that those permissions have
+already been obtained. Third-party components retain their own terms.
+
+6. Data and external services
+
+This license transfers no ownership of the user's or organization's
+session content, source code, prompts, outputs, or other data to the
+maintainer. It grants no permission to collect that data.
+
+Goal Layers can read local Codex records and save local snapshots, edits,
+and review artifacts. Optional AI reviews and chat actions use Codex and
+can transmit supplied content to the provider configured there. Users
+remain responsible for the data they submit, access authorization, and
+applicable provider terms. A network-restricted review fork does not
+establish offline model processing.
+
+Ending this license does not require deletion or surrender of the user's
+own data, although it ends the applicable permission to use the software.
+
+7. Breach and reserved rights
+
+Permissions under this public license terminate if you violate its terms.
+Stop the affected use and distribution when they terminate. This does not
+alter permissions independently available under another valid license or
+mandatory law. A separate commercial agreement may specify its own breach,
+cure, and termination process.
+
 No trademark rights are granted. Rights that cannot lawfully be restricted
-remain unaffected. Permissions under this license terminate if you violate
-its terms. Rights not expressly granted are reserved.
+remain unaffected. All rights not expressly granted are reserved.
 
-6. Disclaimer
+8. Compatibility, support, and disclaimer
+
+Codex interfaces and local schemas can change. No continuing compatibility,
+update, response time, repair deadline, support service, or service-level
+agreement is promised by this license. Any additional paid commitment must
+be expressly stated in a separate written agreement.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDERS
